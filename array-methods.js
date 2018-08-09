@@ -105,22 +105,8 @@ sumOfInterests = dataset.bankBalances
     (previousVal, currentVal) =>
       Math.round((previousVal + currentVal) * 100) / 100
   );
-// .reduce((previousVal, currentVal) => {
-//   let test = previousVal + currentVal;
-//   console.log("try this: ", test);
-// });
-//   console.log(test);
-// });
-console.log("test", sumOfInterests);
-// console.log("test:", sumOfInterests);
-// console.log("see:", dataset.bankBalances);
-// console.log("state:", dataset.bankBalances[0].state === "ME");
-//    {
-//     let test1 = Math.round(elem.amount * 0.189 * 100) / 100;
-//     sumOfInterests.push(test1);
-//     console.log("test1:", sumOfInterests);
-//   }
-// });
+
+// console.log("test", sumOfInterests);
 
 /*
   aggregate the sum of bankBalance amounts
@@ -139,7 +125,17 @@ console.log("test", sumOfInterests);
   )
  */
 var stateSums = null;
-
+stateSums = {};
+dataset.bankBalances.forEach(element => {
+  if (!stateSums.hasOwnProperty(element.state)) {
+    stateSums[element.state] = Number(element.amount);
+  } else {
+    stateSums[element.state] =
+      Math.round((stateSums[element.state] + Number(element.amount)) * 100) /
+      100;
+  }
+});
+// console.log("stateSums:", stateSums);
 /*
   for all states *NOT* in the following states:
     Wisconsin
@@ -158,6 +154,37 @@ var stateSums = null;
   )
  */
 var sumOfHighInterests = null;
+let sumOfState = {};
+let highInterest = [];
+dataset.bankBalances
+  .filter(elem => {
+    return (
+      elem.state !== "WI" &&
+      elem.state !== "IL" &&
+      elem.state !== "WY" &&
+      elem.state !== "OH" &&
+      elem.state !== "GA" &&
+      elem.state !== "DE"
+    );
+  })
+  .forEach(elem => {
+    if (!sumOfState.hasOwnProperty(elem.state)) {
+      sumOfState[elem.state] = Number(elem.amount);
+    } else {
+      sumOfState[elem.state] += Number(elem.amount);
+    }
+  });
+let stateValue = Object.values(sumOfState);
+stateValue.forEach(elem => {
+  elem = Math.round(elem * 0.189 * 100) / 100;
+  if (elem > 50000) {
+    highInterest.push(elem);
+  }
+});
+sumOfHighInterests = highInterest.reduce((pre, cur) => {
+  return Math.round((pre + cur) * 100) / 100;
+});
+console.log("sumhightInterest:", sumOfHighInterests);
 
 /*
   set `lowerSumStates` to be an array of two letter state
@@ -165,13 +192,23 @@ var sumOfHighInterests = null;
   in the state is less than 1,000,000
  */
 var lowerSumStates = null;
-
+lowerSumStates = [];
+Object.entries(stateSums)
+  .filter(elem => elem[1] < 1000000)
+  .forEach(elem => lowerSumStates.push(elem[0]));
+console.log(lowerSumStates);
 /*
   aggregate the sum of each state into one hash table
   `higherStateSums` should be the sum of all states with totals greater than 1,000,000
  */
-var higherStateSums = null;
 
+var higherStateSums = null;
+let higherStateValue = [];
+Object.entries(stateSums)
+  .filter(elem => elem[1] > 1000000)
+  .forEach(elem => higherStateValue.push(elem[1]));
+higherStateSums = higherStateValue.reduce((pre, cur) => pre + cur);
+console.log("test:", higherStateSums);
 /*
   from each of the following states:
     Wisconsin
@@ -188,6 +225,18 @@ var higherStateSums = null;
   otherwise set it to `false`
  */
 var areStatesInHigherStateSum = null;
+areStatesInHigherStateSum = Object.entries(stateSums)
+  .filter(elem => {
+    return (
+      elem[0] === "WI" ||
+      elem[0] === "IL" ||
+      elem[0] === "WY" ||
+      elem[0] === "OH" ||
+      elem[0] === "GA" ||
+      elem[0] === "DE"
+    );
+  })
+  .every(elem => elem[1] > 2550000);
 
 /*
   Stretch Goal && Final Boss
@@ -204,7 +253,19 @@ var areStatesInHigherStateSum = null;
   otherwise set it to be `false`
  */
 var anyStatesInHigherStateSum = null;
-
+anyStatesInHigherStateSum = Object.entries(stateSums)
+  .filter(elem => {
+    return (
+      elem[0] === "WI" ||
+      elem[0] === "IL" ||
+      elem[0] === "WY" ||
+      elem[0] === "OH" ||
+      elem[0] === "GA" ||
+      elem[0] === "DE"
+    );
+  })
+  .some(elem => elem[1] > 2550000);
+console.log("last:", anyStatesInHigherStateSum);
 module.exports = {
   hundredThousandairs: hundredThousandairs,
   datasetWithRoundedDollar: datasetWithRoundedDollar,
